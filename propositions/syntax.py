@@ -294,7 +294,6 @@ class Formula:
         Returns:
             A formula whose polish notation representation is the given string.
         """
-        @staticmethod
         def parse_from(s: str):
             if s[0] == '~':
                 f, rest = parse_from(s[1:])
