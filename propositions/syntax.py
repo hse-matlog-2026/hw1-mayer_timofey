@@ -196,26 +196,20 @@ class Formula:
             should be of ``None`` and an error message, where the error message
             is a string with some human-readable content.
         """
-        if len(string) == 0:
-            return None
-        for i in range(1, len(string) + 1):
-            token = string[:i]
-            if is_variable(token) or is_constant(token):
-                end = i
-            if i == 1:
-                continue
-            if not string[i-1].isalnum():
-                break
-
-        if end > 0:
-            token = string[:end]
-            return Formula(token), string[end:]
+        if not string:
+            return None, "empty"
+        i = 1
+        while i < len(string) and string[i].isalnum():
+            i += 1
+        token = string[:i]
+        if is_variable(token) or is_constant(token):
+            return Formula(token), string[i:]
 
         if string[0] == '~':
-            f, rest = Formula._parse_prefix(string[1:])
-            if f is None:
+            formula, rest = Formula._parse_prefix(string[1:])
+            if formula is None:
                 return None, rest
-            return Formula('~', f), rest
+            return Formula('~', formula), rest
 
         if string[0] == '(':
             left, rest = Formula._parse_prefix(string[1:])
@@ -225,22 +219,22 @@ class Formula:
             if rest.startswith('->'):
                 op = '->'
                 rest = rest[2:]
-            elif len(rest) > 0 and rest[0] in {'&', '|'}:
+            elif rest and rest[0] in {'&', '|'}:
                 op = rest[0]
                 rest = rest[1:]
             else:
-                return None
+                return None, "operator"
 
             right, rest = Formula._parse_prefix(rest)
             if right is None:
                 return None, rest
 
-            if len(rest) == 0 or rest[0] != ')':
-                return None
+            if not rest or rest[0] != ')':
+                return None, "closing bracket"
 
             return Formula(op, left, right), rest[1:]
 
-        return None
+        return None, "not a formula"
 
         # Task 1.4
 
@@ -255,6 +249,11 @@ class Formula:
             ``True`` if the given string is a valid standard string
             representation of a formula, ``False`` otherwise.
         """
+
+        
+        formula, rest = Formula._parse_prefix(string)
+        return formula is not None and rest == ''
+
         # Task 1.5
         
     @staticmethod
