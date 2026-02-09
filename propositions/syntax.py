@@ -267,6 +267,8 @@ class Formula:
             A formula whose standard string representation is the given string.
         """
         assert Formula.is_formula(string)
+        f, rest = Formula._parse_prefix(string)
+        return f
         # Task 1.6
 
     def polish(self) -> str:
@@ -275,6 +277,11 @@ class Formula:
         Returns:
             The polish notation representation of the current formula.
         """
+        if is_variable(self.root) or is_constant(self.root):
+            return self.root
+        if is_unary(self.root):
+            return self.root + self.first.polish()
+        return self.root + self.first.polish() + self.second.polish()
         # Optional Task 1.7
 
     @staticmethod
@@ -287,6 +294,30 @@ class Formula:
         Returns:
             A formula whose polish notation representation is the given string.
         """
+        @staticmethod
+        def parse_from(s: str):
+            if s[0] == '~':
+                f, rest = parse_from(s[1:])
+                return Formula('~', f), rest
+
+            if s.startswith('->'):
+                left, rest = parse_from(s[2:])
+                right, rest = parse_from(rest)
+                return Formula('->', left, right), rest
+
+            if s[0] in {'&', '|'}:
+                left, rest = parse_from(s[1:])
+                right, rest = parse_from(rest)
+                return Formula(s[0], left, right), rest
+
+            i = 1
+            while i < len(s) and s[i].isalnum():
+                i += 1
+            return Formula(s[:i]), s[i:]
+
+        f, rest = parse_from(string)
+        return f
+
         # Optional Task 1.8
 
     def substitute_variables(self, substitution_map: Mapping[str, Formula]) -> \
