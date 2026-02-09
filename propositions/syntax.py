@@ -196,53 +196,51 @@ class Formula:
             should be of ``None`` and an error message, where the error message
             is a string with some human-readable content.
         """
-       @staticmethod
-def _parse_prefix(string: str) -> Tuple[Union[Formula, None], str]:
-    if len(string) == 0:
+        if len(string) == 0:
+            return None
+        for i in range(1, len(string) + 1):
+            token = string[:i]
+            if is_variable(token) or is_constant(token):
+                end = i
+            if i == 1:
+                continue
+            if not string[i-1].isalnum():
+                break
+
+        if end > 0:
+            token = string[:end]
+            return Formula(token), string[end:]
+
+        if string[0] == '~':
+            f, rest = Formula._parse_prefix(string[1:])
+            if f is None:
+                return None, rest
+            return Formula('~', f), rest
+
+        if string[0] == '(':
+            left, rest = Formula._parse_prefix(string[1:])
+            if left is None:
+                return None, rest
+
+            if rest.startswith('->'):
+                op = '->'
+                rest = rest[2:]
+            elif len(rest) > 0 and rest[0] in {'&', '|'}:
+                op = rest[0]
+                rest = rest[1:]
+            else:
+                return None
+
+            right, rest = Formula._parse_prefix(rest)
+            if right is None:
+                return None, rest
+
+            if len(rest) == 0 or rest[0] != ')':
+                return None
+
+            return Formula(op, left, right), rest[1:]
+
         return None
-    for i in range(1, len(string) + 1):
-        token = string[:i]
-        if is_variable(token) or is_constant(token):
-            end = i
-        if i == 1:
-            continue
-        if not string[i-1].isalnum():
-            break
-
-    if end > 0:
-        token = string[:end]
-        return Formula(token), string[end:]
-
-    if string[0] == '~':
-        f, rest = Formula._parse_prefix(string[1:])
-        if f is None:
-            return None, rest
-        return Formula('~', f), rest
-
-    if string[0] == '(':
-        left, rest = Formula._parse_prefix(string[1:])
-        if left is None:
-            return None, rest
-
-        if rest.startswith('->'):
-            op = '->'
-            rest = rest[2:]
-        elif len(rest) > 0 and rest[0] in {'&', '|'}:
-            op = rest[0]
-            rest = rest[1:]
-        else:
-            return None
-
-        right, rest = Formula._parse_prefix(rest)
-        if right is None:
-            return None, rest
-
-        if len(rest) == 0 or rest[0] != ')':
-            return None
-
-        return Formula(op, left, right), rest[1:]
-
-    return None
 
         # Task 1.4
 
