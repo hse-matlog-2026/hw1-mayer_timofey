@@ -317,6 +317,7 @@ class Formula:
         f, rest = parse_from(string)
         return f
 
+
         # Optional Task 1.8
 
     def substitute_variables(self, substitution_map: Mapping[str, Formula]) -> \
