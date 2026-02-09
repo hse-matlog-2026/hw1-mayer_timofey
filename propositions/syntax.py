@@ -315,8 +315,8 @@ class Formula:
             return Formula(s[:i]), s[i:]
 
         f, rest = parse_from(string)
+        assert rest == ''
         return f
-
 
         # Optional Task 1.8
 
