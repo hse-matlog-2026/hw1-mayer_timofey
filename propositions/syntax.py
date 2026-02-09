@@ -310,9 +310,12 @@ class Formula:
                 return Formula(s[0], left, right), rest
 
             i = 1
-            while i < len(s) and s[i].isalnum():
+            while i < len(s) and s[i].isdigit():
                 i += 1
-            return Formula(s[:i]), s[i:]
+
+            token = s[:i]
+            assert is_variable(token) or is_constant(token)
+            return Formula(token), s[i:]
 
         f, rest = parse_from(string)
         assert rest == ''
